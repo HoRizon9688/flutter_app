@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hook_up_rent/pages/register.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -8,19 +10,28 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final controllerUsername = TextEditingController();
+  final controllerPassword = TextEditingController();
+  bool isLoggedIn = false;
   bool _showPassword = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor:Colors.blue[200],title: const Text('登录')),
+      appBar: AppBar(
+          backgroundColor: Colors.blue[200], title: const Text('登录')),
       body: SafeArea(
         minimum: const EdgeInsets.all(30),
         child: ListView(children: [
-          const TextField(
+          TextField(
+            controller: controllerUsername,
+            enabled: !isLoggedIn,
             decoration: InputDecoration(labelText: '用户名', hintText: '请输入用户名'),
           ),
           const Padding(padding: EdgeInsets.all(10)),
           TextField(
+            controller: controllerPassword,
+            enabled: !isLoggedIn,
             obscureText: !_showPassword,
             decoration: InputDecoration(
                 labelText: '密码',
@@ -38,12 +49,12 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const Padding(padding: EdgeInsets.all(20)),
           ElevatedButton(
-              style: ButtonStyle(
+            child: const Text('登录'),
+            style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all(Color(0xffEDFCF5))),
-              onPressed: () {
-                // Todo(),
-              },
-              child: const Text('登录')),
+            onPressed: isLoggedIn ? null : () => doUserLogin(),
+          ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -59,4 +70,137 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  void showSuccess(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Success!"),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showError(String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Error!"),
+          content: Text(errorMessage),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void doUserLogin() async {
+    final username = controllerUsername.text.trim();
+    final password = controllerPassword.text.trim();
+
+    final user = ParseUser(username, password, null);
+
+    var response = await user.login();
+
+    if (response.success) {
+      Message.showSuccess(
+          context: context,
+          message: 'User was successfully created!',
+          onPressed: () async {
+            Navigator.of(context).pop();
+          });
+    } else {
+      Message.showError(context: context, message: response.error!.message);
+    }
+  }
 }
+
+Future<bool> hasUserLogged() async {
+  ParseUser? currentUser = await ParseUser.currentUser() as ParseUser?;
+  if (currentUser == null) {
+    return false;
+  }
+  //Checks whether the user's session token is valid
+  final ParseResponse? parseResponse =
+  await ParseUser.getCurrentUserFromServer(currentUser.sessionToken!);
+
+  if (parseResponse?.success == null || !parseResponse!.success) {
+    //Invalid session. Logout
+    await currentUser.logout();
+    return false;
+  } else {
+    return true;
+  }
+}
+
+class Message {
+  static void showSuccess(
+      {required BuildContext context,
+        required String message,
+        VoidCallback? onPressed}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Success!"),
+          content: Text(message),
+          actions: <Widget>[
+             ElevatedButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (onPressed != null) {
+                  onPressed();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static void showError(
+      {required BuildContext context,
+        required String message,
+        VoidCallback? onPressed}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Error!"),
+          content: Text(message),
+          actions: <Widget>[
+             ElevatedButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (onPressed != null) {
+                  onPressed();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+

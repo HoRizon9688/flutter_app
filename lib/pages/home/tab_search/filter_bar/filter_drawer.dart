@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hook_up_rent/pages/home/tab_search/filter_bar/data.dart';
-import 'package:hook_up_rent/pages/utils/scoped_model_helper.dart';
+import 'package:hook_up_rent/utils/scoped_model_helper.dart';
 import 'package:hook_up_rent/scoped_model/room_filter.dart';
 import 'package:hook_up_rent/widgets/common_title.dart';
 

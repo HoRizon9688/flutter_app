@@ -24,7 +24,7 @@ class AppPages {
     ),
     GetPage(
       name: Routes.REGISTER,
-      page: () => const RegisterPage(),
+      page: () => RegisterPage(),
     ),
     GetPage(
       name: Routes.SETTING,

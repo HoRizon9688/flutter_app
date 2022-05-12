@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hook_up_rent/pages/utils/common_picker/index.dart';
+import 'package:hook_up_rent/utils/common_picker/index.dart';
 import 'package:hook_up_rent/widgets/common_form_item.dart';
 
 class CommonSelectFormItem extends StatelessWidget {

@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:hook_up_rent/apis/request_api.dart';
-import 'package:hook_up_rent/pages/utils/common_toast.dart';
-import 'package:hook_up_rent/pages/utils/dio_http.dart';
+import 'package:hook_up_rent/pages/login.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk.dart';
+import 'dart:io';
+import 'package:http_proxy/http_proxy.dart';
 
+// class RegisterPage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Flutter',
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//         visualDensity: VisualDensity.adaptivePlatformDensity,
+//       ),
+//       home: HomePage_2(),
+//     );
+//   }
+// }
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
 
@@ -11,32 +26,18 @@ class RegisterPage extends StatefulWidget {
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
+// class HomePage_2 extends StatefulWidget {
+//   @override
+//   _HomePage_2State createState() => _HomePage_2State();
+// }
+
 class _RegisterPageState extends State<RegisterPage> {
+  final controllerUsername = TextEditingController();
+  final controllerPassword = TextEditingController();
+  final controllerEmail = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    var usernameController = TextEditingController();
-    var passwordController = TextEditingController();
-    var repeatPasswordController = TextEditingController();
-
-    _registerHandler() async {
-      var username = usernameController.text;
-      var password = passwordController.text;
-      var repeatPassword = repeatPasswordController.text;
-      if (username.isEmpty || password.isEmpty) {
-        CommonToast.showToast('用户名或密码不能为空!');
-        return;
-      }
-      if (password != repeatPassword) {
-        CommonToast.showToast('两次输入密码不一致');
-        return;
-      }
-
-      var params = {'username': username, 'password': password};
-      var res = await DioHttp.of(context).post(RequestApi.REGISTER, params);
-      print(res.data);
-      Navigator.pushNamed(context, 'login');
-    }
-
     return Scaffold(
       appBar: AppBar(title: const Text('注册')),
       body: SafeArea(
@@ -44,7 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
         child: ListView(
           children: [
             TextField(
-              controller: usernameController,
+              controller: controllerUsername,
               decoration: const InputDecoration(
                 labelText: '用户名',
                 hintText: '请输入用户名',
@@ -52,7 +53,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const Padding(padding: EdgeInsets.all(10)),
             TextField(
-              controller: passwordController,
+              controller: controllerPassword,
               decoration: const InputDecoration(
                 labelText: '密码',
                 hintText: '请输入密码',
@@ -60,15 +61,15 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const Padding(padding: EdgeInsets.all(10)),
             TextField(
-              controller: repeatPasswordController,
+              controller: controllerEmail,
               decoration: const InputDecoration(
-                labelText: '确认密码',
-                hintText: '请输入密码',
+                labelText: '邮箱',
+                hintText: '请输入邮箱',
               ),
             ),
             const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () => _registerHandler(),
+              onPressed: () => doUserRegistration(),
               child: const Text('注册'),
             ),
             Row(
@@ -76,11 +77,11 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 const Text('已有账号，'),
                 TextButton(
+                  child: const Text('去登录~'),
                   onPressed: () {
-                    // Navigator.pushNamed(context, 'login');
                     Navigator.pushReplacementNamed(context, 'login');
                   },
-                  child: const Text('去登录~'),
+
                 )
               ],
             ),
@@ -88,5 +89,71 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+  void showSuccess() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("注册成功!"),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text("ok"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showError(String errorMessage) {
+    String message = '';
+    String a = 'Account';
+    String b = 'Email';
+    if (errorMessage.startsWith(a)) {
+      message = '该账号已被注册!';
+    }
+    if (errorMessage.startsWith(b)) {
+      message = '邮箱格式不正确！';
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          // title: const Text("Error!"),
+          content: Text(message),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text("ok"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  void doUserRegistration() async {
+    final username = controllerUsername.text.trim();
+    final email = controllerEmail.text.trim();
+    final password = controllerPassword.text.trim();
+
+    final user = ParseUser.createUser(username, password, email);
+
+    var response = await user.signUp();
+
+    if (response.success) {
+      showSuccess();
+    } else {
+      showError(response.error!.message);
+      //Sigup code here
+    }
   }
 }

@@ -21,7 +21,7 @@ class SearchBar extends StatefulWidget {
       this.showMap,
       this.onSearch,
       this.onSearchSubmit})
-      : super(key: key);
+      : super(key: key);  //用户输入搜索词后，点击键盘的搜索键触发
 
   @override
   State<SearchBar> createState() => _SearchBarState();
@@ -43,7 +43,7 @@ class _SearchBarState extends State<SearchBar> {
   void initState() {
     super.initState();
     _focus = FocusNode();
-    _controller = TextEditingController(text: widget.inputValue);
+    _controller = TextEditingController(text: widget.inputValue);//
   }
 
   @override
