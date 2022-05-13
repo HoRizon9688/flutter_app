@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hook_up_rent/scoped_model/auth.dart';
+import 'package:hook_up_rent/utils/scoped_model_helper.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk.dart';
 
 var loginRegisterStyle = const TextStyle(fontSize: 20, color: Colors.white);
 
@@ -7,7 +10,7 @@ class Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var isLogin = false;
+    var isLogin = ScopedModelHelper.getModel<AuthModel>(context).isLogin;
     return isLogin ? _loginBuilder(context) : _notLoginBuilder(context);
   }
 
@@ -54,9 +57,34 @@ class Header extends StatelessWidget {
       ),
     );
   }
+  // _getUserInfo(BuildContext context) async {
+  //   ParseUser? currentUser = await ParseUser.currentUser() as ParseUser?;
+  //   String? Username = currentUser?.username;
+  //   String? Email = currentUser?.emailAddress;
+  // }
+  //Reading your First Data Object from Back4App
+  // Future<Map<String, dynamic>> getPerson(String objectId) async {
+  //   QueryBuilder<ParseObject> queryPerson =
+  //   QueryBuilder<ParseObject>(ParseObject('Person'))
+  //     ..whereEqualTo('objectId', objectId);
+  //   final ParseResponse apiResponse = await queryPerson.query();
+  //   if (apiResponse.success && apiResponse.results != null) {
+  //     final name = apiResponse.results?.first.get<String>('name');
+  //     final age = apiResponse.results?.first.get<String>('age');
+  //     return {'name': name, 'age': age};
+  //   } else {
+  //     return {};
+  //   }
+  // }
+
 
   Container _loginBuilder(BuildContext context) {
-    String userName = '已登录用户名';
+    _getUserInfo(BuildContext context) async {
+      ParseUser? currentUser = await ParseUser.currentUser() as ParseUser?;
+      String? Username = currentUser?.username;
+      String? Email = currentUser?.emailAddress;
+    }
+    String userName = '';
     String userImage =
         'https://tva1.sinaimg.cn/large/006y8mN6ly1g6tbnovh8jj30hr0hrq3l.jpg';
 
@@ -89,4 +117,16 @@ class Header extends StatelessWidget {
       ),
     );
   }
+  Future<List<ParseObject>> getTodo() async {
+    QueryBuilder<ParseObject> queryTodo =
+    QueryBuilder<ParseObject>(ParseObject('Todo'));
+    final ParseResponse apiResponse = await queryTodo.query();
+
+    if (apiResponse.success && apiResponse.results != null) {
+      return apiResponse.results as List<ParseObject>;
+    } else {
+      return [];
+    }
+  }
+
 }

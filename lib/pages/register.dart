@@ -97,7 +97,7 @@ class _RegisterPageState extends State<RegisterPage> {
         return AlertDialog(
           title: const Text("注册成功!"),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: const Text("ok"),
               onPressed: () {
                 Navigator.pop(context);
@@ -127,7 +127,7 @@ class _RegisterPageState extends State<RegisterPage> {
           // title: const Text("Error!"),
           content: Text(message),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: const Text("ok"),
               onPressed: () {
                 Navigator.of(context).pop();

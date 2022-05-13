@@ -23,7 +23,7 @@ class TabProfile extends StatelessWidget {
         children: const [
           Header(),
           FunctionButton(),
-          Advertisement(),
+          // Advertisement(),
           Info(showTitle: true),
         ],
       ),

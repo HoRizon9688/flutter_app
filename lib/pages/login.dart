@@ -1,6 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:hook_up_rent/pages/register.dart';
+import 'package:hook_up_rent/utils/scoped_model_helper.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk.dart';
+
+import '../scoped_model/auth.dart';
+import '../utils/store.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -115,19 +121,39 @@ class _LoginPageState extends State<LoginPage> {
     final username = controllerUsername.text.trim();
     final password = controllerPassword.text.trim();
 
-    final user = ParseUser(username, password, null);
+    final user = ParseUser(username, password,null);
 
     var response = await user.login();
+
+    ParseUser? currentUser = await ParseUser.currentUser() as ParseUser?;
+    String? token = currentUser?.sessionToken;
+
+    Store store = await Store.getInstance();
+    await store.setString(StoreKeys.token, token!);
+    ScopedModelHelper.getModel<AuthModel>(context).login(token,context);
+    // var resMap = json.decode(response.toString());
+    // int status = resMap['status'];
+    // String description = resMap['description'] ?? '内部错误';
+    //
+    // if (status.toString().startsWith('2')){
+    //   String token = resMap['body']['token'];
+    //
+    //   Store store = await Store.getInstance();
+    //   await store.setString(StoreKeys.token, token);
+    //
+    //   ScopedModelHelper.getModel<AuthModel>(context).login(token,context);
+    // }
 
     if (response.success) {
       Message.showSuccess(
           context: context,
-          message: 'User was successfully created!',
+          message: '登录成功！',
           onPressed: () async {
             Navigator.of(context).pop();
           });
     } else {
-      Message.showError(context: context, message: response.error!.message);
+      Message.showError(context: context,
+          message: response.error!.message);
     }
   }
 }
@@ -150,6 +176,8 @@ Future<bool> hasUserLogged() async {
   }
 }
 
+
+
 class Message {
   static void showSuccess(
       {required BuildContext context,
@@ -159,7 +187,6 @@ class Message {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Success!"),
           content: Text(message),
           actions: <Widget>[
              ElevatedButton(
